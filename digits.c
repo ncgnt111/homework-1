@@ -36,20 +36,20 @@ int add_number_to_array(int **array, size_t *size_array, int number) {
 
 int write_array_to_file(FILE *fp, int **array, size_t *size_array) {
     for (size_t i = 0; i < 3; ++i) {
-      for (size_t j = 0; j < size_array[i]; ++j) {
-        fprintf(fp, "%d ", array[i][j]);
+        for (size_t j = 0; j < size_array[i]; ++j) {
+            fprintf(fp, "%d ", array[i][j]);
 
-        if (errno) {
-            printf("ERROR: %s\n", strerror(errno));
+            if (errno) {
+                printf("ERROR: %s\n", strerror(errno));
 
-            for(int i = 0; i < 3; i++)
-                free(array[i]); // realloc doesn't free it in case of fail
-            free(array);
+                for(int i = 0; i < 3; i++)
+                    free(array[i]); // realloc doesn't free it in case of fail
+                free(array);
 
-            fclose(fp);
-            return EXIT_FAILURE;
+                fclose(fp);
+                return EXIT_FAILURE;
+            }
         }
-      }
     }
     return EXIT_SUCCESS;
 }
