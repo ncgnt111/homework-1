@@ -30,32 +30,24 @@ void write_array_to_file(FILE *fp, int **array, size_t *size_array) {
 
 void modify_file(char *file_name) {
     FILE *fp = fopen(file_name, "r");
-
     if (!fp) {
         printf("ERROR: %s\n", strerror(errno));
         exit(EXIT_FAILURE);
     }
 
     // Create three dynamic arrays for zeros, negative and positive values
-    int *zer_values = NULL;
-    int *neg_values = NULL;
-    int *pos_values = NULL;
+    int *zer_values = NULL; int *neg_values = NULL; int *pos_values = NULL;
 
-    size_t size_zer_values = 0;
-    size_t size_neg_values = 0;
-    size_t size_pos_values = 0;
+    size_t size_zer_values = 0; size_t size_neg_values = 0; size_t size_pos_values = 0;
 
     int number = 0;
-
     int result = 0;
 
     while (((result = fscanf(fp, "%d", &number)) != EOF)) {
         if (result == 0) {
             printf("File must contain only integer values\n");
             fclose(fp);
-            free(zer_values);
-    	    free(neg_values);
-            free(pos_values);
+            free(zer_values); free(neg_values); free(pos_values);
             exit(EXIT_FAILURE);
         } else {
             if (number == 0) {
@@ -69,9 +61,7 @@ void modify_file(char *file_name) {
     }
 
     fclose(fp);
-
     fp = fopen(file_name, "w");
-
     if (!fp) {
         printf("ERROR: %s\n", strerror(errno));
         exit(EXIT_FAILURE);
@@ -83,9 +73,7 @@ void modify_file(char *file_name) {
     write_array_to_file(fp, &neg_values, &size_neg_values);
     write_array_to_file(fp, &pos_values, &size_pos_values);
 
-    free(zer_values);
-    free(neg_values);
-    free(pos_values);
+    free(zer_values); free(neg_values); free(pos_values);
 
     fclose(fp);
 }
