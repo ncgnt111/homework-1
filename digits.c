@@ -18,9 +18,10 @@ void add_number_to_array(int **array, size_t *size_array, int *ptr_number) {
     }
 }
 
-void write_array_to_file(FILE *fp, int *array, size_t *size_array) {
+void write_array_to_file(FILE *fp, int **array, size_t *size_array) {
     for (size_t i = 0; i < *size_array; ++i) {
-        if(!(fprintf(fp, "%d ", array[i]))) {
+        if(!(fprintf(fp, "%d ", (*array)[i]))) {
+	    free (*array);
             printf("ERROR: %s\n", strerror(errno));
             exit(EXIT_FAILURE);
         }
@@ -46,13 +47,24 @@ void modify_file(char *file_name) {
 
     int number = 0;
 
-    while (fscanf(fp, "%d", &number) != EOF) {
-        if (number == 0) {
-            add_number_to_array(&zer_values, &size_zer_values, &number);
-        } else if (number < 0) {
-            add_number_to_array(&neg_values, &size_neg_values, &number);
+    int result = 0;
+
+    while (((result = fscanf(fp, "%d", &number)) != EOF)) {
+        if (result == 0) {
+            printf("File must contain only integer values\n");
+            fclose(fp);
+            free(zer_values);
+    	    free(neg_values);
+            free(pos_values);
+            exit(EXIT_FAILURE);
         } else {
-            add_number_to_array(&pos_values, &size_pos_values, &number);
+            if (number == 0) {
+                add_number_to_array(&zer_values, &size_zer_values, &number);
+            } else if (number < 0) {
+                add_number_to_array(&neg_values, &size_neg_values, &number);
+            } else {
+                add_number_to_array(&pos_values, &size_pos_values, &number);
+            }
         }
     }
 
@@ -67,9 +79,9 @@ void modify_file(char *file_name) {
 
     // Write values from dynamic arrays to the txt-file:
     // zeros, then negative and positive values
-    write_array_to_file(fp, zer_values, &size_zer_values);
-    write_array_to_file(fp, neg_values, &size_neg_values);
-    write_array_to_file(fp, pos_values, &size_pos_values);
+    write_array_to_file(fp, &zer_values, &size_zer_values);
+    write_array_to_file(fp, &neg_values, &size_neg_values);
+    write_array_to_file(fp, &pos_values, &size_pos_values);
 
     free(zer_values);
     free(neg_values);
@@ -77,4 +89,3 @@ void modify_file(char *file_name) {
 
     fclose(fp);
 }
-
