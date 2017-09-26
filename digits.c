@@ -3,78 +3,124 @@
 #include <errno.h>
 #include <string.h>
 
-void add_number_to_array(int **array, size_t *size_array, int *ptr_number) {
+int add_number_to_array(int **array, size_t *size_array, int number) {
+    int idx = 0;
+
+    if (number == 0) {
+        idx = 0;
+    } else if (number < 0) {
+        idx = 1;
+    } else {
+        idx = 2;
+    }
+
     int *addr = NULL;
-    ++(*size_array);
-    addr = (int*)realloc(*array, (*size_array) * sizeof(int)); // change the size of the memory block
+    ++(size_array[idx]);
+
+    addr = (int*)realloc(array[idx], (size_array[idx]) * sizeof(int)); // change the size of the memory block
 
     if (addr != NULL) {
-        *array = addr;
-        (*array)[(*size_array) - 1] = *ptr_number; // write a number to the corresponding array
+    array[idx] = addr;
+    array[idx][size_array[idx]-1] = number; // write a number to the corresponding array
+    return EXIT_SUCCESS;
     } else {
-        free (*array); // realloc doesn't free it in case of fail
         printf("ERROR: %s\n", strerror(errno));
-        exit(EXIT_FAILURE);
+
+        for(int i = 0; i < 3; i++)
+            free(array[i]); // realloc doesn't free it in case of fail
+        free(array);
+
+        return EXIT_FAILURE;
     }
 }
 
-void write_array_to_file(FILE *fp, int *array, size_t *size_array) {
-    for (size_t i = 0; i < *size_array; ++i) {
-        if(!(fprintf(fp, "%d ", array[i]))) {
-            printf("ERROR: %s\n", strerror(errno));
-            exit(EXIT_FAILURE);
+int write_array_to_file(FILE *fp, int **array, size_t *size_array) {
+    for (size_t i = 0; i < 3; ++i) {
+        for (size_t j = 0; j < size_array[i]; ++j) {
+            fprintf(fp, "%d ", array[i][j]);
+
+            if (errno) {
+                printf("ERROR: %s\n", strerror(errno));
+
+                for(int i = 0; i < 3; i++)
+                    free(array[i]); // realloc doesn't free it in case of fail
+                free(array);
+
+                fclose(fp);
+                return EXIT_FAILURE;
+            }
         }
     }
+    return EXIT_SUCCESS;
 }
 
-void modify_file(char *file_name) {
+int modify_file(char *file_name) {
     FILE *fp = fopen(file_name, "r");
-
     if (!fp) {
         printf("ERROR: %s\n", strerror(errno));
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
     }
 
-    // Create three dynamic arrays for zeros, negative and positive values
-    int *zer_values = NULL;
-    int *neg_values = NULL;
-    int *pos_values = NULL;
+    // Create multidimensional dynamic array for zeros, negative and positive values
+    int **values = NULL;
+    values = malloc(3 * sizeof(int *));
+    if(values == NULL) {
+        printf("ERROR: %s\n", strerror(errno));
+        return EXIT_FAILURE;
+    }
 
-    size_t size_zer_values = 0;
-    size_t size_neg_values = 0;
-    size_t size_pos_values = 0;
+    for(int i = 0; i < 3; i++) {
+        values[i] = NULL;
+    }
+
+    size_t size_values[3] = {0};
 
     int number = 0;
 
-    while (fscanf(fp, "%d", &number) != EOF) {
-        if (number == 0) {
-            add_number_to_array(&zer_values, &size_zer_values, &number);
-        } else if (number < 0) {
-            add_number_to_array(&neg_values, &size_neg_values, &number);
+    int result_fscanf = 0;
+    int result_add_number = 0;
+    int result_write_array = 0;
+
+    while (((result_fscanf = fscanf(fp, "%d", &number)) != EOF)) {
+        if (result_fscanf == 0) {
+            printf("File must contain only integer values!\n");
+            for(int i = 0; i < 3; i++)
+                free(values[i]);
+            free(values);
+            fclose(fp);
+            return EXIT_FAILURE;
         } else {
-            add_number_to_array(&pos_values, &size_pos_values, &number);
+            result_add_number = add_number_to_array(values, size_values, number);
+            if (result_add_number == EXIT_FAILURE) {
+                fclose(fp);
+                return EXIT_FAILURE;
+            }
         }
     }
 
     fclose(fp);
-
     fp = fopen(file_name, "w");
-
     if (!fp) {
         printf("ERROR: %s\n", strerror(errno));
-        exit(EXIT_FAILURE);
+        for(int i = 0; i < 3; i++)
+            free(values[i]);
+        free(values);
+        return EXIT_FAILURE;
     }
 
-    // Write values from dynamic arrays to the txt-file:
+    // Write values from multidimensional dynamic array to the txt-file:
     // zeros, then negative and positive values
-    write_array_to_file(fp, zer_values, &size_zer_values);
-    write_array_to_file(fp, neg_values, &size_neg_values);
-    write_array_to_file(fp, pos_values, &size_pos_values);
+    result_write_array = write_array_to_file(fp, values, size_values);
 
-    free(zer_values);
-    free(neg_values);
-    free(pos_values);
+    if (result_write_array == EXIT_FAILURE) {
+        return EXIT_FAILURE;
+    }
+
+    for(int i = 0; i < 3; i++)
+        free(values[i]);
+    free(values);
 
     fclose(fp);
-}
 
+    return EXIT_SUCCESS;
+}
