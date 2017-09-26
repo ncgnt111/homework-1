@@ -2,5 +2,3 @@ cd ~/third
 gcc -c -Wall -Wextra main.c digits.c
 gcc main.o digits.o -o third
 valgrind --tool=memcheck --leak-check=full ./third numbers
-
-
