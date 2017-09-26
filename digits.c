@@ -46,14 +46,21 @@ void modify_file(char *file_name) {
 
     int number = 0;
 
-    while (fscanf(fp, "%d", &number) != EOF) {
-        if (number == 0) {
-            add_number_to_array(&zer_values, &size_zer_values, &number);
-        } else if (number < 0) {
-            add_number_to_array(&neg_values, &size_neg_values, &number);
-        } else {
-            add_number_to_array(&pos_values, &size_pos_values, &number);
-        }
+    int result;
+
+    while (((result = fscanf(fp, "%d", &number)) != EOF)) {
+            if (result == 0) {
+                printf("File must contain only integer values\n");
+                exit(EXIT_FAILURE);
+            } else {
+                if (number == 0) {
+                    add_number_to_array(&zer_values, &size_zer_values, &number);
+                } else if (number < 0) {
+                    add_number_to_array(&neg_values, &size_neg_values, &number);
+                } else {
+                    add_number_to_array(&pos_values, &size_pos_values, &number);
+                }
+            }
     }
 
     fclose(fp);
