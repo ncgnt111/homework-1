@@ -28,7 +28,6 @@ void write_array_to_file(FILE *fp, int *array, size_t *size_array) {
 }
 
 void modify_file(char *file_name) {
-
     FILE *fp = fopen(file_name, "r");
 
     if (!fp) {
