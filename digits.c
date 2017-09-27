@@ -35,7 +35,6 @@ int add_number_to_array(int **array, int *size_array, int number) {
 }
 
 int write_array_to_file(FILE *fp, int **array, int *size_array) {
-
     int result_fprintf = 0;
 
     for (int i = 0; i < 3; ++i) {
