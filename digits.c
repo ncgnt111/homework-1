@@ -3,7 +3,7 @@
 #include <errno.h>
 #include <string.h>
 
-int add_number_to_array(int **array, size_t *size_array, int number) {
+int add_number_to_array(int **array, int *size_array, int number) {
     int idx = 0;
 
     if (number == 0) {
@@ -20,9 +20,9 @@ int add_number_to_array(int **array, size_t *size_array, int number) {
     addr = (int*)realloc(array[idx], (size_array[idx]) * sizeof(int)); // change the size of the memory block
 
     if (addr != NULL) {
-    array[idx] = addr;
-    array[idx][size_array[idx]-1] = number; // write a number to the corresponding array
-    return EXIT_SUCCESS;
+        array[idx] = addr;
+        array[idx][size_array[idx]-1] = number; // write a number to the corresponding array
+        return EXIT_SUCCESS;
     } else {
         printf("ERROR: %s\n", strerror(errno));
 
@@ -34,12 +34,16 @@ int add_number_to_array(int **array, size_t *size_array, int number) {
     }
 }
 
-int write_array_to_file(FILE *fp, int **array, size_t *size_array) {
-    for (size_t i = 0; i < 3; ++i) {
-        for (size_t j = 0; j < size_array[i]; ++j) {
-            fprintf(fp, "%d ", array[i][j]);
+int write_array_to_file(FILE *fp, int **array, int *size_array) {
 
-            if (errno) {
+    int result_fprintf = 0;
+
+    for (int i = 0; i < 3; ++i) {
+        for (int j = 0; j < size_array[i]; ++j) {
+
+            result_fprintf = fprintf(fp, "%d ", array[i][j]);
+
+            if (result_fprintf < 0) {
                 printf("ERROR: %s\n", strerror(errno));
 
                 for(int i = 0; i < 3; i++)
@@ -55,7 +59,8 @@ int write_array_to_file(FILE *fp, int **array, size_t *size_array) {
 }
 
 int modify_file(char *file_name) {
-    FILE *fp = fopen(file_name, "r");
+    FILE *fp = NULL;
+    fp = fopen(file_name, "r");
     if (!fp) {
         printf("ERROR: %s\n", strerror(errno));
         return EXIT_FAILURE;
@@ -73,7 +78,7 @@ int modify_file(char *file_name) {
         values[i] = NULL;
     }
 
-    size_t size_values[3] = {0};
+    int size_values[3] = {0};
 
     int number = 0;
 
@@ -111,7 +116,6 @@ int modify_file(char *file_name) {
     // Write values from multidimensional dynamic array to the txt-file:
     // zeros, then negative and positive values
     result_write_array = write_array_to_file(fp, values, size_values);
-
     if (result_write_array == EXIT_FAILURE) {
         return EXIT_FAILURE;
     }
