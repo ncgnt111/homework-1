@@ -1,4 +1,8 @@
-cd ~/third
+cd ~/homework-1
+
+gcc gen.c -o gen
+valgrind --tool=memcheck --leak-check=full ./gen numbers
+
 gcc -c -Wall -Wextra main.c digits.c
-gcc main.o digits.o -o third
-valgrind --tool=memcheck --leak-check=full ./third numbers
+gcc main.o digits.o -o homework-1
+valgrind --tool=memcheck --leak-check=full ./homework-1 numbers
